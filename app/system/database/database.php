@@ -2,20 +2,17 @@
     namespace App\System\DataBase;
 
     interface DataBase {
-        /**
-         * Вызов соединения с базой данных
-         * @return DataBase
-         */
-        public function connection();
+        public function __construct();
 
-        /**
-         * Делаем запрос к базе
-         * @return DataBase
-         */
-        public function query();
+        public function create($model, array $fields);
 
-        /**
-         *
-         */
-        public function fetchToArray();
+        public function getById($model, $id);
+
+        public function getList($model, array $fields);
+
+        public function update($model, $id, array $fields);
+
+        public function remove($model, $id);
+
+        public function destroy();
     }
