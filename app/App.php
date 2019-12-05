@@ -11,7 +11,8 @@
          */
         const sittings = [
             'DataBase' => [
-                'driver'    => 'App\System\DataBase\MySQL', // ONLY SQL Drive !!!!
+                //'driver'    => 'App\System\DataBase\MySQL',
+                'driver'    => 'App\System\DataBase\myPDO',
                 'server'    => 'localhost',
                 'base'      => 'mysqitedb',
                 'user'      => 'mysql',
@@ -49,6 +50,8 @@
                 self::sittings['DataBase']['password']
             );
 
+            var_dump($this->DB);
+
             if(!$this->DB) {
                 Exception::fail(__FILE__, "Неполадки с драйвером данных");
             };
@@ -65,6 +68,6 @@
 
         public function end() {
             $this->DB->destroy();
-            echo microtime(true) - $this->start;
+            echo "Выполнено за " . round(microtime(true) - $this->start, 4) . " сек.";
         }
     }

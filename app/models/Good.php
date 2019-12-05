@@ -21,4 +21,6 @@
             parent::$tableName = self::tableName;
             return parent::add($fields);
         }
+
+
     }

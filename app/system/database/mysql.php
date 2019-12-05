@@ -2,7 +2,12 @@
     namespace App\System\DataBase;
 
     use App\System\Exception;
-
+    /**
+     * Методы работы с хранилищем находятся тут, так как
+     * хотелось отделить язык запросов от модели данных.
+     * Напиример если будем хранить данные в файле а не БД
+     * Просто создадим класс с интерфейсом и реализуем методы.
+     */
     class MySQL implements DataBase {
         protected $link, $result;
 

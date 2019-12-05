@@ -4,7 +4,7 @@
 
     $good = new App\Models\Good;
 
-    //$good::install();
+    //$good::install(); Установили таблицу
 
     // Добавляет товар
     $res = $good::add([
@@ -12,6 +12,6 @@
         'name' => 'New product'
     ]);
 
-    print_r($res);
+    var_dump($res);
 
     $App->end();
