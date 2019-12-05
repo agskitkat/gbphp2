@@ -4,8 +4,13 @@
 namespace App\System\DataBase;
 use App\System\Exception;
 use PDO;
+use PDOException;
 
-class myPDO extends PDO implements DataBase {
+class myPDO implements DataBase {
+    /**
+     * @var PDO
+     */
+    private $db;
 
     /**
      * DataBase constructor.
@@ -15,26 +20,58 @@ class myPDO extends PDO implements DataBase {
      * @param string $password
      */
     public function __construct($server = 'localhost', $database = 'mysql',  $user = 'user',  $password = 'password') {
-        return false;
+        $dsn = 'mysql:dbname='.$database.';host='.$server;
+        try {
+            $this->db = new PDO($dsn, $user, $password);
+            $this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->db->setAttribute( PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            Exception::fail(__FILE__, 'Подключение не удалось: ' . $e->getMessage());
+        }
     }
 
     /**
      * Метод создания записи модели
      * @param $model :название модели (таблица SQL или имя файла)
      * @param array $fields :ассоциативный массив данных модели
-     * @return mixed
+     * @return mixed false or new id
      */
     public function create($model, array $fields) {
-        // TODO: Implement create() method.
+        $query = "INSERT INTO `" . $model. "`";
+
+        $query_fields = [];
+        $query_values = [];
+
+        foreach($fields as $key => $field) {
+            $query_fields[] = "`$key`";
+            $query_values[] = "'$field'";
+        }
+
+        $query .= " (" . implode(",", $query_fields) . ")";
+        $query .= " VALUES (" . implode(",", $query_values) . ");";
+
+        if(!$result = $this->query($query)) {
+            return false;
+        }
+
+        return $this->db->lastInsertId();
     }
 
     /**
      * Получить запись модели по уникальному значению
      * @param $model :название модели (таблица SQL или имя файла)
      * @param $id :уникальный идентификатор записи
+     * @return bool
      */
     public function getById($model, $id) {
-        // TODO: Implement getById() method.
+        $query = "SELECT * FROM `" . $model. "` WHERE `id` = '$id';";
+
+        if(!$result = $this->query($query)) {
+            return  $query;
+        }
+
+        return $result;
     }
 
     /**
@@ -44,9 +81,34 @@ class myPDO extends PDO implements DataBase {
      * TODO: реализовать операторы
      * Для начала можно реализовать операторы =, !=, <, >
      * Потом доработать сложные, например BETWEEN или `Частичное вхождение`
+     * @return mixed
      */
-    public function getList($model, array $fields) {
-        // TODO: Implement getList() method.
+    public function find($model, array $fields) {
+        $query = "SELECT * FROM `".$model."` ";
+
+        if(count($fields)) {
+            $WHERE = [];
+            foreach($fields as $field) {
+                $value = $field[key($field)];
+                $arKeyAndOperator = explode(":", key($field));
+                if(count($arKeyAndOperator) == 2) {
+                    $operator = $arKeyAndOperator[1];
+                    $key = $arKeyAndOperator[0];
+                } else {
+                    $operator = "=";
+                    $key = key($field);
+                }
+
+                $WHERE[] = "`$key` " .  $operator . " '" . $value ."'";
+            }
+            $query .= "WHERE " . implode(",", $WHERE) . ";";
+        }
+
+        if(!$result = $this->db->query($query)) {
+            return false;
+        }
+
+        return $result->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -74,6 +136,58 @@ class myPDO extends PDO implements DataBase {
      *  Вызывается в конце приложения
      */
     public function destroy() {
-        // TODO: Implement destroy() method.
+        return true;
+    }
+
+
+    /**
+     *  Делаем запрос
+     */
+    private function query($query) {
+        try {
+            $sth = $this->db->prepare($query);
+            $sth->execute();
+            return $sth;
+        } catch(PDOException $e) {
+            Exception::add(__FILE__, 'Запрос не удался: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     *  Создаёт хранилище или таблицу
+     * @param $model
+     * @param array $fields
+     * @return bool
+     */
+    public function createTable($model, array $fields) {
+        $query = "IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'$model')";
+
+        if(!$this->query($query)) {
+            $query = "CREATE TABLE `{$model}` (";
+            $query .= '`id` int(255) NOT NULL,';
+            $query .= '`create_at` datetime NOT NULL DEFAULT current_timestamp(),';
+            $query .= '`updete_at` datetime NOT NULL DEFAULT current_timestamp(),';
+            $query .= implode(",", $fields);
+            $query .= ");";
+
+            if(!$result = $this->query($query)) {
+                Exception::add(__FILE__, 'Таблица '.$model.' не создана');
+                return false;
+            }
+
+            // Add primary key
+            if(!$result =  $this->query("ALTER TABLE `{$model}` ADD PRIMARY KEY (`id`);")) {
+                Exception::add(__FILE__, 'Не создан ключ');
+                return false;
+            };
+
+            // ID auto increment
+            if(!$result =  $this->query("ALTER TABLE `{$model}` MODIFY `id` int(255) NOT NULL AUTO_INCREMENT;")) {
+                Exception::add(__FILE__, 'Не добавлен автоинкремент');
+                return false;
+            };
+        }
+        return true;
     }
 }

@@ -8,10 +8,6 @@
 
         static function install() {
             return self::createTable(self::tableName, [
-                //TODO: лучше сделать типы и обрабатывать в базовой модели
-                // ТИПЫ число, строка, время и т.д.
-                // Совйства Уникальный, Автозаполняемый, ключевой и т.д.
-                // Пок так (
                 "`code` varchar(255) NOT NULL",
                 "`name` text NOT NULL"
             ]);
@@ -22,5 +18,8 @@
             return parent::add($fields);
         }
 
-
+        public static function find($fields) {
+            parent::$tableName = self::tableName;
+            return parent::find($fields);
+        }
     }

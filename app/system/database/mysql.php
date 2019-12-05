@@ -2,12 +2,7 @@
     namespace App\System\DataBase;
 
     use App\System\Exception;
-    /**
-     * Методы работы с хранилищем находятся тут, так как
-     * хотелось отделить язык запросов от модели данных.
-     * Напиример если будем хранить данные в файле а не БД
-     * Просто создадим класс с интерфейсом и реализуем методы.
-     */
+
     class MySQL implements DataBase {
         protected $link, $result;
 
@@ -74,7 +69,7 @@
          * @param $fields
          * @return mixed
          */
-        public function createTable($tableName, $fields) {
+        public function createTable($tableName, array $fields) {
             $query = "IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'$tableName')";
 
             if(!$this->query($query)) {
@@ -129,21 +124,25 @@
         public function getById($tableName, $id)
         {
             // TODO: Implement getById() method.
+            return false;
         }
 
         public function getList($tableName, array $fields)
         {
             // TODO: Implement getList() method.
+            return false;
         }
 
         public function update($tableName, $id, array $fields)
         {
             // TODO: Implement update() method.
+            return false;
         }
 
         public function remove($tableName, $id)
         {
             // TODO: Implement remove() method.
+            return false;
         }
 
         public function destroy() {

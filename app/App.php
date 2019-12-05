@@ -50,8 +50,6 @@
                 self::sittings['DataBase']['password']
             );
 
-            var_dump($this->DB);
-
             if(!$this->DB) {
                 Exception::fail(__FILE__, "Неполадки с драйвером данных");
             };

@@ -34,19 +34,32 @@
          */
         static function add($fields) {
             global $App;
-            $App->DB->create(self::$tableName, $fields);
+            $goodId = $App->DB->create(self::$tableName, $fields);
+            return self::find(array(["ID:=" => $goodId]));
         }
 
-        static function get($id) {
 
+        /**
+         * Реализация save
+         * @param array $fields
+         * @return bool
+         */
+        static function find($fields) {
+            global $App;
+            return $App->DB->find(self::$tableName, $fields);
         }
-        static function getList($filter) {
 
-        }
-        static function update($fields) {
-
-        }
-        static function delete($id) {
-
+        /**
+         * Реализация save
+         * @param array $fields
+         * @return bool
+         */
+        static function save($fields) {
+            global $App;
+            if(!$fields['ID']) {
+                $App->DB->create(self::$tableName, $fields);
+            } else {
+                $App->DB->update(self::$tableName, $fields['ID'], $fields);
+            }
         }
     }
