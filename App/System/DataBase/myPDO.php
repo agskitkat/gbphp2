@@ -107,8 +107,11 @@ class myPDO implements DataBase {
         if(!$result = $this->db->query($query)) {
             return false;
         }
-
-        return $result->fetchAll(PDO::FETCH_ASSOC);
+        if($result->rowCount() > 1) {
+            return $result->fetchAll(PDO::FETCH_ASSOC);
+        } else {
+            return $result->fetch();
+        }
     }
 
     /**

@@ -14,10 +14,10 @@
     var_dump($good);
 
     // Поиск товаров
-    $goods = App\Models\Good::find( Array(["ID"=>"1"]) );
+    $goods = App\Models\Good::find(Array(["ID"=>"1"]));
     var_dump($goods);
 
-    $goods = App\Models\Good::find( Array(["create_at:>"=>"2019-12-05 16:46:42"]) );
+    $goods = App\Models\Good::find(Array(["create_at:>"=>"2019-12-05 16:46:42"]));
     var_dump($goods);
 
 
