@@ -2,23 +2,23 @@
     include_once("App/App.php");
     $App = new App\App();
 
+    $good = new App\Models\Good();
 
-    //$good::install(); //Установили таблицу
+    //$good->install(); //Установили таблицу
 
-    // Добавляет товар
-    $good =  App\Models\Good::add([
-        "code" => "A000".rand(0,99),
-        'name' => 'New product'
-    ]);
-
+    // LESSON 3
+    $rand = rand(0,999);
+    $good->name = "Товар - ".$rand;
+    $good->code = "A".$rand;
+    $good->save();
     var_dump($good);
 
-    // Поиск товаров
-    $goods = App\Models\Good::find(Array(["ID"=>"1"]));
+    $goods = $good->find(Array(["create_at:>"=>"2019-12-11 16:50:10"]));
     var_dump($goods);
+    $good->remove($goods[0]->id);
 
-    $goods = App\Models\Good::find(Array(["create_at:>"=>"2019-12-05 16:46:42"]));
-    var_dump($goods);
-
+    $goods[1]->name = "TEST 123";
+    $goods[1]->update();
+    var_dump($goods[1]);
 
     $App->end();

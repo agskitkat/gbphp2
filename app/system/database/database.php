@@ -25,7 +25,7 @@
          * @param array $fields :ассоциативный массив данных модели
          * @return mixed false or new id
          */
-        public function create($model, array $fields);
+        public function insert($model, array $fields);
 
         /**
          * Получить запись модели по уникальному значению

@@ -37,7 +37,7 @@ class myPDO implements DataBase {
      * @param array $fields :ассоциативный массив данных модели
      * @return mixed false or new id
      */
-    public function create($model, array $fields) {
+    public function insert($model, array $fields) {
         $query = "INSERT INTO `" . $model. "`";
 
         $query_fields = [];
@@ -65,13 +65,11 @@ class myPDO implements DataBase {
      * @return bool
      */
     public function getById($model, $id) {
-        $query = "SELECT * FROM `" . $model. "` WHERE `id` = '$id';";
-
-        if(!$result = $this->query($query)) {
+        $query = "SELECT * FROM `" . $model. "` WHERE `id` = :id;";
+        if(!$result = $this->query($query, [':id'=>$id])) {
             return  $query;
         }
-
-        return $result;
+        return $result->fetch();
     }
 
     /**
@@ -107,10 +105,11 @@ class myPDO implements DataBase {
         if(!$result = $this->db->query($query)) {
             return false;
         }
+
         if($result->rowCount() > 1) {
-            return $result->fetchAll(PDO::FETCH_ASSOC);
+            return ["ITEMS" => $result->fetchAll(PDO::FETCH_ASSOC)];
         } else {
-            return $result->fetch();
+            return  ["ITEMS" => [$result->fetch()]];
         }
     }
 
@@ -119,18 +118,39 @@ class myPDO implements DataBase {
      * @param $model :название модели (таблица SQL или имя файла)
      * @param $id :уникальный идентификатор записи
      * @param array $fields :ассоциативный массив данных модели
+     * @return bool
      */
     public function update($model, $id, array $fields) {
-        // TODO: Implement update() method.
+        $arSet = [];
+        foreach($fields as $key => $val) {
+            $arSet[] = "$key = '$val'";
+        }
+        $set = implode(', ', $arSet);
+
+        $query = "UPDATE `{$model}` SET {$set} WHERE id = {$id};";
+
+        if(!$result = $this->db->query($query)) {
+            return false;
+        }
+
+        return $this->getById($model, $id);
     }
 
     /**
      * Удаление записи
      * @param $model :название модели (таблица SQL или имя файла)
      * @param $id :уникальный идентификатор записи
+     * @return bool
      */
     public function remove($model, $id) {
-        // TODO: Implement remove() method.
+        if(!$id) {
+            return false;
+        }
+        $query = "DELETE FROM `{$model}` WHERE id = {$id};";
+        if( !$result = $this->db->query($query) ) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -142,14 +162,13 @@ class myPDO implements DataBase {
         return true;
     }
 
-
     /**
      *  Делаем запрос
      */
-    private function query($query) {
+    private function query($query, $params = []) {
         try {
             $sth = $this->db->prepare($query);
-            $sth->execute();
+            $sth->execute($params);
             return $sth;
         } catch(PDOException $e) {
             Exception::add(__FILE__, 'Запрос не удался: ' . $e->getMessage());

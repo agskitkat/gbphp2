@@ -4,8 +4,10 @@
     /**
      * CRUD model base
     */
-    class Model {
+    abstract class Model {
         protected static $tableName;
+
+        abstract public function getTableName(): string;
 
         /**
          * Создание таблицы для модели
@@ -21,32 +23,58 @@
          * "City varchar(255)"
          * ])
          */
-        static function createTable($tableName, Array $tableFields = []) {
+        function createTable(Array $tableFields = []) {
             global $App;
-            return $App->DB->createTable($tableName, $tableFields);
+            return $App->DB->createTable($this->getTableName(), $tableFields);
         }
-
 
         /**
          * Добавляет запись модели
-         * @param array $fields
          * @return bool
          */
-        static function add($fields) {
+        function insert() {
             global $App;
-            $goodId = $App->DB->create(self::$tableName, $fields);
+            $fields = $this->getData();
+            $goodId = $App->DB->insert($this->getTableName(), $fields);
             return self::find(array(["ID:=" => $goodId]));
         }
 
+        /**
+         * Обновить по ID
+         * @return bool
+         */
+        function update() {
+            global $App;
+            $fields = $this->getData();
+            $goodId = $App->DB->update($this->getTableName(), $this->id, $fields);
+
+            var_dump([$this->getTableName(), $this->id, $fields]);
+
+            $this->setData(
+                $App->DB->getById($this->getTableName(), $goodId)
+            );
+
+            return true;
+        }
 
         /**
          * Реализация save
          * @param array $fields
-         * @return bool
+         * @return array
          */
-        static function find($fields) {
+        function find($fields) {
             global $App;
-            return $App->DB->find(self::$tableName, $fields);
+            $items = $App->DB->find($this->getTableName(), $fields);
+            $items =  $items['ITEMS'];
+            if(count($items) > 1) {
+                $return = [];
+                foreach($items as $item) {
+                    $this->setData($item);
+                    $return[] = clone $this;
+                }
+                return $return;
+            }
+            $this->setData($items);
         }
 
         /**
@@ -54,12 +82,65 @@
          * @param array $fields
          * @return bool
          */
-        static function save($fields) {
+        function getById($id) {
             global $App;
-            if(!$fields['ID']) {
-                $App->DB->create(self::$tableName, $fields);
+            $this->setData($App->DB->getById($id));
+        }
+
+        /**
+         * Реализация save
+         * @return bool
+         */
+        function save() {
+            global $App;
+            $fields = $this->getData();
+            if(!$this->id) {
+                $goodId = $App->DB->insert($this->getTableName(), $fields);
+                $this->setData(
+                    $App->DB->getById($this->getTableName(),  $goodId)
+                );
+                return true;
             } else {
-                $App->DB->update(self::$tableName, $fields['ID'], $fields);
+                $goodId = $App->DB->update($this->getTableName(), $this->id, $fields);
+                $this->setData(
+                    $App->DB->getById($this->getTableName(), $goodId)
+                );
+                return true;
             }
+        }
+
+        /**
+         * Свойства объекта в массив
+         * @return array
+         */
+        function getData() {
+            $fields = [];
+            foreach($this as $key => $val) {
+                if( $key != "id") {
+                    $fields[$key] = $val;
+                }
+            }
+            return $fields;
+        }
+
+        /**
+         * Устанавливаем состояние объекта из массива
+         * @param $fields
+         * @return void
+         */
+        function setData($fields) {
+            if($fields) {
+                foreach ($fields as $key => $val) {
+                    $this->{$key} = $val;
+                }
+            }
+        }
+
+        /**
+         * Удаление
+         */
+        function remove($id) {
+            global $App;
+            return $App->DB->remove($this->getTableName(), $id);
         }
     }

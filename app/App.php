@@ -35,12 +35,6 @@
             $this->start = microtime(true);
             self::autoload(); // Загрузчик классов
 
-            /*
-            Exception::add(__FILE__, "Новое исключение 1");
-            Exception::add(__FILE__, "Новое исключение 2");
-            Exception::printList();
-            */
-
             // Подключение к базе данных
             $dataBaseDriver = self::sittings['DataBase']['driver'];
             $this->DB = new $dataBaseDriver(
@@ -63,7 +57,9 @@
             spl_autoload_register([new Autoload(), 'loadClass']);
         }
 
-
+        /**
+         *
+         */
         public function end() {
             $this->DB->destroy();
             echo "Выполнено за " . round(microtime(true) - $this->start, 4) . " сек.";
