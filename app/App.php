@@ -3,7 +3,8 @@
 
     use App\System\Exception;
     use App\System\Autoload;
-    use App\System\DataBase;
+    use App\Controllers\GoodController;
+
 
     class App {
         /**
@@ -47,6 +48,9 @@
             if(!$this->DB) {
                 Exception::fail(__FILE__, "Неполадки с драйвером данных");
             };
+
+
+            $_GET['route'];
         }
 
         /**

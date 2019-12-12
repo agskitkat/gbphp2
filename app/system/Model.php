@@ -48,8 +48,6 @@
             $fields = $this->getData();
             $goodId = $App->DB->update($this->getTableName(), $this->id, $fields);
 
-            var_dump([$this->getTableName(), $this->id, $fields]);
-
             $this->setData(
                 $App->DB->getById($this->getTableName(), $goodId)
             );
